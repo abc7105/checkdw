@@ -34,74 +34,68 @@ implementation
 
 procedure TForm1.Button1Click(Sender: TObject);
 var
-  xx, yy, zz: tstringlist;
+  aXlsToMdb: xlstomdb;
+  EXCELAPP: Variant;
+  zdname, zdlength: string;
+  zd1, zd2: string;
 begin
-  xx := tstringlist.create();
-  yy := tstringlist.create();
-  zz := tstringlist.create();
 
-  //  DOThisDB.sheetname := 'lxytest';
-  //
-  //  xx.Add('id');
-  //  xx.Add('lxyname');
-  //  xx.Add('address');
-  //  xx.Add('MONEYdd');
-  //  xx.Add('是否重点');
-  //  dothisdb.fieldname := xx;
-  //
-  //  yy.clear;
-  //  yy.Add('N');
-  //  yy.Add('C');
-  //  yy.Add('C');
-  //  yy.Add('F');
-  //  yy.Add('B');
-  //  dothisdb.fieldtype := yy;
-  //
-  //  zz.clear;
-  //  zz.Add('0');
-  //  zz.Add('20');
-  //  zz.Add('50');
-  //  zz.Add('0');
-  //  zz.Add('0');
-  //  dothisdb.fieldlength := zz;
+  //测试建库
+  debugreset;
+  try
+    excelapp := createoleobject('excel.application');
+  except
+    Exit;
+  end;
 
-   // DOThisDB.createTable;
+  mainpath := ExtractFilePath(Application.ExeName);
+  excelapp.WorkBooks.Open(FileName := ExtractFilePath(Application.ExeName) +
+    '单位往来交易模块.xlsx', UpdateLinks := 0);
+  excelapp.visible := TRUE;
+
+  aXlsToMdb := XlsToMdb.create(excelapp, mainpath + 'checkzw.mdb');
+
+  zd1 := ' 单位名称,	对方单位编码 ,对方单位名称 ,	应收票据,	 应收帐款';
+  zd2 := ' 单位名称,	对方单位编码 ,对方单位名称 ,	应收票据,	 应收帐款';
+
+  try
+    axlstomdb.XlsSheetdata_into_Mdbtable('内部往来', '内部往来', zd1, zd2);
+  finally
+    excelapp.WorkBooks.close;
+    excelapp.quit;
+    excelapp := Unassigned;
+  end;
   DebugList;
-
+  showmessage('字段到字段完成！');
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
-//var
-//  EXCELAPP: Variant;
-//  aLXYdoexcel: LXYdoexcel;
+var
+  aXlsToMdb: xlstomdb;
+  EXCELAPP: Variant;
+  zdname, zdlength: string;
+  zd1, zd2: string;
 begin
-  // DebugReset;
- //  try
- //    excelapp := createoleobject('excel.application');
- //    //   showbar(0, ' 建立EXCEL进程ok！  ');
- //  except
- //    //   showbar(0, ' ERROR:建立EXCEL进程失败！  ');
- //    Exit;
- //  end;
- //  excelapp.WorkBooks.Open(FileName := ExtractFilePath(Application.ExeName) +
- //    '单位往来交易模块.xlsx', UpdateLinks := 0);
- //  //  EXCElAPP.WORKBOOKS.OPEN(ExtractFilePath(Application.ExeName) +
- //  //    '单位往来交易模块.xlsx');
- //  aLXYdoexcel := LXYdoexcel.create(EXCELAPP, mainpath + 'checkzw.MDB');
- //  aLXYdoexcel.aworkbook := EXCElAPP.activeworkbook;
- //  aLXYdoexcel.sheetname := '内部单位';
- //  aLXYdoexcel.CreateMdbTable();
- //  DEBUGLIST;
- //
- //  aLXYdoexcel.aworkbook := EXCElAPP.activeworkbook;
- //  aLXYdoexcel.sheetname := '内部往来';
- //  aLXYdoexcel.CreateMdbTable();
- //
- //  excelapp.activeworkbook.close(false);
- //  ExcelApp.quit;
- //  excelapp := unassigned;
- //  ShowMessage('OK');
 
+  //测试建库
+  debugreset;
+  try
+    excelapp := createoleobject('excel.application');
+  except
+    Exit;
+  end;
+  mainpath := ExtractFilePath(Application.ExeName);
+  excelapp.WorkBooks.Open(FileName := ExtractFilePath(Application.ExeName) +
+    '单位往来交易模块.xlsx', UpdateLinks := 0);
+  excelapp.visible := TRUE;
+
+  aXlsToMdb := XlsToMdb.create(excelapp, mainpath + 'checkzw.mdb');
+  axlstomdb.XlsSheet_into_Mdbtable('内部往来', '内部往来');
+  excelapp.WorkBooks.close;
+  excelapp.quit;
+  excelapp := Unassigned;
+  DebugList;
+  showmessage('表到表完成');
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
@@ -109,6 +103,7 @@ var
   aXlsToMdb: xlstomdb;
   EXCELAPP: Variant;
   zdname, zdlength: string;
+  zd1, zd2: string;
   // mainpath:string;
 begin
   //测试建库
@@ -122,16 +117,20 @@ begin
   excelapp.WorkBooks.Open(FileName := ExtractFilePath(Application.ExeName) +
     '单位往来交易模块.xlsx', UpdateLinks := 0);
   excelapp.visible := TRUE;
+
   aXlsToMdb := XlsToMdb.create(excelapp, mainpath + 'checkzw.mdb');
+
   zdname := '姓名,年龄';
   zdlength := '30,20';
   aXlsToMdb.Createxlsxheet('lxy', zdname, zdlength);
 
   axlstomdb.XlssSheet_TOcreate_MdbTable('内部往来', '内部往来');
 
-  axlstomdb.XlsSheet_into_Mdbtable('内部往来', '内部往来');
-  DebugList;
-  showmessage('建库成功');
+  excelapp.WorkBooks.close;
+  excelapp.quit;
+  excelapp := Unassigned;
+
+  showmessage('建库完成！');
 
 end;
 

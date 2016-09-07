@@ -15,28 +15,28 @@ object Form1: TForm1
   PixelsPerInch = 96
   TextHeight = 13
   object Button1: TButton
-    Left = 185
-    Top = 152
-    Width = 148
+    Left = 45
+    Top = 151
+    Width = 205
     Height = 25
-    Caption = #27979#35797#24314#31435' MDB'
+    Caption = #34920#37096#20998#21040#34920#37096#20998#23383#27573#24314#24211
     TabOrder = 0
     OnClick = Button1Click
   end
   object Button2: TButton
-    Left = 185
-    Top = 200
-    Width = 148
+    Left = 47
+    Top = 109
+    Width = 203
     Height = 25
-    Caption = #27979#35797#20174'EXCEL'#21040'MDB'
+    Caption = #34920#21040#34920#24314#24211
     TabOrder = 1
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 129
-    Top = 33
-    Width = 75
-    Height = 25
+    Left = 46
+    Top = 64
+    Width = 203
+    Height = 28
     Caption = #27979#35797#24314#34920
     TabOrder = 2
     OnClick = Button3Click

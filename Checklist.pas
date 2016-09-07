@@ -62,11 +62,8 @@ type
     function filldate(asheet: Variant; ncolumn: integer): boolean;
     procedure fillzero(asheet: Variant; ncolumn: integer);
     procedure xlsfieldinfotolist;
-    procedure formatexcelsheet;
     procedure listclear;
     function INmdbtable(zdname: string; zdlists: TStringList): Integer;
-    //    procedure changefieldinfoInFORM();
-        // function sheetexist(): Boolean;
     function sheetexists(excelapp: Variant; aname: string): boolean;
     function zdlens: tstringlist;
     function zdtypes: tstringlist;
@@ -88,7 +85,7 @@ type
       manyfieldlengthstr, manyfieldtypestr: string);
 
     //SHEET数据导入到MDB数据库中去
-    procedure XlsSheetdata_into_Mdbtable(sheetname, tablename,
+    procedure XlsSheetdata_into_Mdbtable(XlsSheetname, MdbTablename,
       manyfieldnamestr_inxls, manyfieldnamestr_inmdb: string);
     procedure XlsSheet_into_Mdbtable(XlsSheetname, MdbTablename: string);
     function zdnames: tstringlist;
@@ -488,15 +485,78 @@ begin
   //
 end;
 
-procedure XlsToMdb.FormatExcelSheet;
-begin
-  //
-end;
-
-procedure XlsToMdb.XlsSheetdata_into_Mdbtable(sheetname, tablename,
+procedure XlsToMdb.XlsSheetdata_into_Mdbtable(XlsSheetname, MdbTablename,
   manyfieldnamestr_inxls, manyfieldnamestr_inmdb: string);
+var
+  I, iindex: INTEGER;
+  cols: integer;
+  MDBzdNAMEs: TStringList;
+  MDBzdTYPEs: TStringList;
+  MDBzddlens: TStringList;
+  xlszdnames: TStringList;
+  xlszdnames_para: TStringList;
+  strx: string;
+
 begin
-  //
+  //要加入改变
+  xlszdnames := TStringList.Create;
+  Faworkbook := excelapp.activeworkbook;
+  try
+    if not sheetexists(EXCELAPP, XlsSheetname) then
+    begin
+      curSheet := Faworkbook.SHEETS.ADD;
+      curSheet.NAME := XlsSheetname;
+    end
+    else
+      curSheet := Faworkbook.WORKSHEETS.item[XlsSheetname];
+  except
+    ShowMessage('ERROR: EXCEL文件未打开！');
+    exit;
+  end;
+
+  listclear;
+
+  try
+    atable.TableName := MdbTablename;
+    atable.Open;
+  except
+    ShowMessage('数据库中无对应的表！请检查。');
+    exit;
+  end;
+
+  cols := curSheet.usedrange.columns.count;
+  for i := 1 to cols do
+    xlszdnames.Add(Trim(curSheet.cells[1, i].text));
+
+  MDBzdNAMEs := zdnames();
+  MDBzdTYPEs := zdtypes();
+  MDBzddlens := zdlens();
+
+  strx := manyfieldnamestr_inmdb;
+  ffieldname := splitstring(strx, ',');
+  debugstringlist(ffieldname);
+  strx := manyfieldnamestr_inxls;
+  xlszdnames_para := splitstring(manyfieldnamestr_inxls, ',');
+  debugstringlist(xlszdnames_para);
+
+  for i := 0 to ffieldname.count - 1 do
+  begin
+    iindex := INmdbtable(ffieldname[i], MDBzdNAMEs);
+    if iindex = -1 then
+    begin
+      showmessage('有字段不匹配数据库，请检查 ！' + ffieldname[i] + '==');
+      exit;
+    end;
+
+    ffieldtype.Add(MDBzdTYPEs[iindex]);
+    format_sheet_column(curSheet, i, MDBzdTYPEs[iindex]);
+    ffieldlength.Add(MDBzddlens[iindex]);
+    ffieldpos.Add(IntToStr(INmdbtable(xlszdnames_para[i], xlszdnames) + 1));
+  end;
+  sheetdata_tomdb;
+
+  xlszdnames.Free;
+  xlszdnames := nil;
 end;
 
 procedure XlsToMdb.XlsSheet_into_Mdbtable(XlsSheetname,
@@ -535,16 +595,15 @@ begin
 
   cols := curSheet.usedrange.columns.count;
   MDBzdNAMEs := zdnames();
-  //  ShowMessage(MDBzdNAMEs[1]);
   MDBzdTYPEs := zdtypes();
   MDBzddlens := zdlens();
 
   for i := 1 to cols do
   begin
-    iindex := INmdbtable(curSheet.cells[1, i].Text, MDBzdNAMEs);
+    iindex := INmdbtable(trim(curSheet.cells[1, i].Text), MDBzdNAMEs);
     if iindex <> -1 then
     begin
-      ffieldname.Add(MDBzdNAMEs[iindex]);
+      ffieldname.Add(trim(MDBzdNAMEs[iindex]));
       ffieldtype.Add(MDBzdTYPEs[iindex]);
       format_sheet_column(curSheet, i, MDBzdTYPEs[iindex]);
       ffieldlength.Add(MDBzddlens[iindex]);
@@ -558,7 +617,6 @@ procedure XlsToMdb.sheetdata_tomdb;
 var
   rows, i, j: Integer;
 begin
-  // TODO -cMM: sheetdata_tomdb default body inserted
   rows := curSheet.usedrange.rows.count;
 
   for i := 2 to rows do
